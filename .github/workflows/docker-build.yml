@@ -1,0 +1,28 @@
+name: Docker Build CI
+
+# 1. Trigger: When do we run this?
+# We run this on every push to the 'main' branch
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+# 2. Jobs: What do we do?
+jobs:
+  build-test:
+    # Use a standard Ubuntu server hosted by GitHub
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step A: Check out (download) your code onto the server
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # Step B: Build the Docker image to ensure the Dockerfile is valid
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag my-linux-toolset:latest
+
+    # Step C: simple test to verify the container runs
+    - name: Test the image
+      run: docker run my-linux-toolset:latest git --version
