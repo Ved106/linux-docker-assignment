@@ -1,28 +1,30 @@
-name: Docker Build CI
+name: Build and Push Docker Image
 
-# 1. Trigger: When do we run this?
-# We run this on every push to the 'main' branch
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
 
-# 2. Jobs: What do we do?
 jobs:
-  build-test:
-    # Use a standard Ubuntu server hosted by GitHub
+  build-push:
     runs-on: ubuntu-latest
 
     steps:
-    # Step A: Check out (download) your code onto the server
+    # 1. Download code
     - name: Checkout code
       uses: actions/checkout@v4
 
-    # Step B: Build the Docker image to ensure the Dockerfile is valid
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-linux-toolset:latest
+    # 2. Log in to Docker Hub using the secrets you created
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
 
-    # Step C: simple test to verify the container runs
-    - name: Test the image
-      run: docker run my-linux-toolset:latest git --version
+    # 3. Build the image AND push it to Docker Hub
+    - name: Build and Push
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: true
+        # Replace 'your-username' below with your actual Docker Hub username!
+        tags: ${{ secrets.DOCKER_USERNAME }}/linux-ops:latest
